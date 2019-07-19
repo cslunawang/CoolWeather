@@ -3,16 +3,20 @@ package com.example.coolweather.activity;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.coolweather.R;
 import com.example.coolweather.gson.Forecast;
 import com.example.coolweather.gson.Weather;
@@ -41,6 +45,7 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView comfortText;
     private TextView carWashText;
     private TextView sportText;
+    private ImageView bingPicImg;
 
     private final String TAG = "WeatherActivity";
 
@@ -48,6 +53,17 @@ public class WeatherActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
+        if(Build.VERSION.SDK_INT >= 21){
+            //系统版本5.0以上才支持
+            //调用此方法  改变系统的UI显示，
+            //两个参数表示活动的布局会显示在  状态栏   上面，最后调用设置透明色
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            );
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+        }
 
         //初始化各控件
         weatherLayout = (ScrollView) findViewById(R.id.weather_layout);
@@ -61,9 +77,21 @@ public class WeatherActivity extends AppCompatActivity {
         comfortText = (TextView) findViewById(R.id.comfort_text);
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
+        bingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
+
         //share存储
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather",null);
+        //加载img
+        String bingPic = prefs.getString("bing_pic",null);
+        if(bingPic != null){
+            //glide 加载
+            Glide.with(this).load(bingPic).into(bingPicImg);
+        }
+        else {
+            loadBingPic();
+        }
+
         if(weatherString != null){
             //有缓存时/不用发起请求
             Weather weather = Utility.handleWeatherResponse(weatherString);
@@ -118,6 +146,39 @@ public class WeatherActivity extends AppCompatActivity {
                         else{
                             Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
+                    }
+                });
+
+            }
+        });
+
+        loadBingPic();
+    }
+
+    /**
+     * 加载必应每日一图
+     */
+    public void loadBingPic(){
+        String requestBingPic = "http://guolin.tech/api/bing_pic";
+        HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                //获取请求，加载进去，存入缓存
+                final String bingPic = response.body().string();
+                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                editor.putString("bing_pic",bingPic);
+                editor.apply();
+                //回到主线程 处理  UI
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
+
                     }
                 });
 
