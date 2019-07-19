@@ -1,10 +1,13 @@
 package com.example.coolweather.util;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.example.coolweather.db.City;
 import com.example.coolweather.db.Country;
 import com.example.coolweather.db.Province;
+import com.example.coolweather.gson.Weather;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -12,7 +15,28 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
+/**
+ * 解析类 处理response 写入数据库中
+ */
 public class Utility {
+
+    public static Weather handleWeatherResponse(String response){
+        try{
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            Log.d("weatherContent",weatherContent);
+            //解析 并 存入数据库
+            return new Gson().fromJson(weatherContent,Weather.class);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     /**
      * 解析和处理服务器返回的省级数据
      */
@@ -84,6 +108,8 @@ public class Utility {
         }
         return false;
     }
+
+
 
 
 
