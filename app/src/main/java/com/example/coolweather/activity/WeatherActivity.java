@@ -1,8 +1,9 @@
 package com.example.coolweather.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -11,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -48,6 +50,8 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView sportText;
     private ImageView bingPicImg;
     public SwipeRefreshLayout swipeRefreshLayout;
+    public DrawerLayout drawerLayout;
+    private Button navButton;
 
     private final String TAG = "WeatherActivity";
 
@@ -85,6 +89,17 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
         bingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navButton = (Button) findViewById(R.id.nav_home) ;
+
+        //左部滑动菜单
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //openDrawer打开左部菜单
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
 
         //share存储
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -101,12 +116,13 @@ public class WeatherActivity extends AppCompatActivity {
 
         final String weatherId;
 
+
         if(weatherString != null){
             //有缓存时/不用发起请求
             Weather weather = Utility.handleWeatherResponse(weatherString);
+            weatherId = weather.basic.weatherId;
             //显示
             showWeatherInfo(weather);
-            weatherId = weather.basic.weatherId;
         }
         else {
             //无缓存时去服务器查询天气

@@ -14,13 +14,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 
+import com.example.coolweather.MainActivity;
 import com.example.coolweather.R;
 import com.example.coolweather.activity.WeatherActivity;
 import com.example.coolweather.db.City;
 import com.example.coolweather.db.Country;
 import com.example.coolweather.db.Province;
+import com.example.coolweather.gson.Weather;
 import com.example.coolweather.util.HttpUtil;
 import com.example.coolweather.util.Utility;
 
@@ -80,6 +83,7 @@ public class ChooseAreaFragment extends Fragment {
 
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Log.d("created","hi");
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -100,11 +104,26 @@ public class ChooseAreaFragment extends Fragment {
                 else if(currentLevel == LEVEL_COUNTRY){
                     String weatherId = countryList.get(i).getWeatherId();
 
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id",weatherId);
-                    //开始新的活动。中止当前活动
-                    startActivity(intent);
-                    getActivity().finish();
+
+                    //判断活动/weather活动的话，close关闭。设置可以刷新，访问
+                    if(getActivity() instanceof MainActivity){
+                        Log.d("getActivity",getActivity().toString());
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id",weatherId);
+                        //开始新的活动。中止当前活动
+                        startActivity(intent);
+                        getActivity().finish();
+                    }
+                    else if(getActivity() instanceof WeatherActivity){
+                        Log.d("startCode","weather");
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                       activity.drawerLayout.closeDrawer(GravityCompat.START);
+                       activity.swipeRefreshLayout.setRefreshing(true);
+                       activity.requestWeather(weatherId);
+
+                    }
+
+
                 }
             }
         });
