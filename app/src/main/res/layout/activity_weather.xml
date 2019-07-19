@@ -9,6 +9,12 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop"/>
 
+    <!--下拉刷新，把主要部分包含进来-->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
     <!--设置滚动条不显示、设置滑到边缘时无效果-->
     <ScrollView
         android:id="@+id/weather_layout"
@@ -31,5 +37,7 @@
             <include layout="@layout/suggestion"/>
         </LinearLayout>
     </ScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
 </FrameLayout>
